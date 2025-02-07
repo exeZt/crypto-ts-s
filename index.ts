@@ -1,6 +1,6 @@
 const encode = (str: string, key?: number) => {
     let enc : number[] = [];
-    let key1 = (Math.random() * 0xffffff) << 2;
+    let key1 = key ?? (Math.random() * 0xffffff) << 2;
     let data: number[] = [];
 
     for (let i = 0; i < str.length; i++) {
@@ -8,11 +8,16 @@ const encode = (str: string, key?: number) => {
         data = [...data, element]
     }
 
+    let hash = (val) => val ^ key1;
+
     console.log(data)
     console.log(key)
     let final: string ='';
     //return data ^ key;
-    data.forEach((v, i) => i === 0 ? final += v^ (key ?? key1): final += `-${v ^ (key ?? key1)}`)
+    data.forEach((v, i) => i === 0 
+        ? final += hash(v)
+        : final += `-${hash(v)}`)
+
     console.log(final)
     return final;   
 }
@@ -28,8 +33,18 @@ const decode = (str: string, key: number) => {
     console.log(final);
 }
 
-const genKey = () => (Math.random() * 0xffffff) << 2;
-// test zone
+const genKey = () => {
+    let a = ((Math.random() * 0xDA) << 0xf) >>> 0x1
+    let b = (((Math.random() * 0xfff) << 0x13) >> a)
+    let c = (((Math.random() * b) << 0x92A) >> b)
+    return c < 0 ? ~c : c
+};
+
+
+for(let i = 0; i < 16; i++) {
+    console.log(genKey())
+}
+
 let key = genKey();
 let astr = encode('some data', key)
 decode(astr, key)
